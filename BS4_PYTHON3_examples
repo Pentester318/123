@@ -1,0 +1,55 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+import sqlite3
+import time
+from datetime import datetime
+from bs4 import BeautifulSoup
+from urllib2 import urlopen
+
+
+dt = datetime.now()
+date = str(dt.strftime("%d.%m.%Y %H:%M:%S"))
+
+
+html = urlopen('https://finance.rambler.ru/currencies/USD/').read()
+soup = BeautifulSoup(html, 'lxml')
+div = soup.find('div', class_="exr-top-info__val")
+eventt = str(div)
+
+
+
+con = sqlite3.connect('test_base.db')
+cur = con.cursor()
+sql = """\
+CREATE TABLE IF NOT EXISTS testTable (
+    id INTEGER PRIMARY KEY,
+    date TEXT, 
+    eventt TEXT);
+"""
+   
+try:
+    cur.executescript(sql)    
+except sqlite3.DatabaseError as err:
+    print('error: ', err)
+else:
+	print('Base was created')
+base = (date, eventt)
+sql = "INSERT INTO testTable (date, eventt) VALUES(?, ?)"
+
+try:
+    cur.execute(sql, base)
+except sqlite3.DatabaseError as err:
+    print('error: ', err )
+    print(contentError.format(err))
+else:
+    con.commit()
+
+
+
+
+cur.execute('select * from testTable')
+test = cur.fetchall()
+
+for row in test:
+	print(row)
